@@ -15,6 +15,32 @@ config schema specific to your setup — this skill is the behavioral layer
 on top: what to actually *do* when seeding or running a controller,
 independent of your specific repos.
 
+## Gate prepaid-balance agent vendors — never usable without asking first
+
+If any of the agent vendors you configure for Ralph TUI are billed against a
+prepaid balance rather than an included subscription quota, gate them.
+Ralph TUI's agent config has no native per-invocation confirmation
+mechanism — a normal `[[agents]]` entry just runs when selected, with no
+way to pause and ask a human first. Don't rely on a config comment saying
+"ask before using this"; that's not a real gate, it only works as long as
+nobody forgets.
+
+The pattern that works: point the agent's `command` at a wrapper script
+instead of the real CLI binary. The wrapper refuses to invoke the real CLI
+unless an explicit environment variable is set in the process that spawns
+it (e.g. `ALLOW_PREPAID_SPEND=1`), printing a clear error and exiting
+non-zero otherwise. Never set that variable on the operator's behalf, and
+never treat a prior approval as covering a later, different task — ask
+fresh every time, no matter how routine it seems. **Verify the gate
+actually blocks before trusting it** — run the CLI (or `ralph-tui doctor
+--agent <name>`) with the variable deliberately unset and confirm you get
+a clean refusal with zero real API calls, not just read the wrapper source
+and assume it works. This mirrors the same "never select a usage-credits-
+backed model without asking" rule that applies to interactive Herdr
+orchestration too — same principle, same reason (real money, not included
+usage), just enforced at a different layer since Ralph TUI and Herdr spawn
+agents differently.
+
 ## The one rule everything else follows from
 
 **Task scope is the real safety control, not a human approval gate.**
