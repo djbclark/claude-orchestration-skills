@@ -115,6 +115,38 @@ The only reliable check is independent, every time:
   timestamp and content, on the right issue, in the right state (still
   open if the task said not to close it)?
 
+## autoCommit=false's built-in prompt can tell agents to never commit
+
+Check your Ralph TUI version's embedded default prompt template for the
+tracker you use (e.g. beads-bv) for a workflow step that hard-codes
+something like "Do NOT create git commits. Leave all changes uncommitted
+for manual review" whenever `autoCommit=false`. If `autoCommit=false` is
+your standing choice (see "The one rule everything else follows from"
+above), that blanket instruction directly contradicts any task whose own
+description asks for a commit, push, or PR as its deliverable — and an
+agent that follows the template's literal instruction over the task's own
+text isn't misbehaving, it's resolving a real conflict you created by not
+noticing the template said this.
+
+Confirmed real: a task whose description explicitly asked for a
+commit/push/PR did the actual work correctly, then left everything
+uncommitted, closing its tracker item with a reason citing the no-commit
+instruction. This is a config/prompt problem, not an agent-competence
+one — adding "please actually commit" to future task descriptions just
+re-fights the same conflict every time instead of fixing it once.
+
+**Fix it globally, not per-task**: override the tracker's prompt template
+at `~/.config/ralph-tui/templates/<tracker>.hbs` (check your version's
+template precedence — `ralph-tui template show --tracker <name>` should
+confirm which file actually wins) so the relevant step defers to the
+task's own description as the authority on git actions, instead of
+asserting a blanket rule. `ralph-tui template init --tracker <name>
+--global` is the supported way to get a starting copy to edit.
+
+Regardless of this fix, still independently verify per the section below
+— it reduces how often this happens, it doesn't replace checking `git
+status`/`git log` against what the task actually asked for.
+
 ## Where controllers run
 
 Run every controller from a dedicated task workspace on its own branch —
