@@ -1,0 +1,13 @@
+{
+  "name": "herdr-orchestration",
+  "description": "Drive a multi-agent handoff chain directly via Herdr instead of human-relayed clipboard handoffs — safety discipline, pane layout, yolo-mode setup per tool, and anti-patterns from real orchestration sessions.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Daniel JB Clark",
+    "url": "https://github.com/djbclark"
+  },
+  "homepage": "https://github.com/djbclark/claude-orchestration-skills",
+  "repository": "https://github.com/djbclark/claude-orchestration-skills",
+  "license": "MIT",
+  "keywords": ["herdr", "orchestration", "multi-agent", "automation"]
+}

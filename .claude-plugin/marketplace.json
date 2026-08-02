@@ -1,0 +1,20 @@
+{
+  "name": "claude-orchestration-skills",
+  "owner": {
+    "name": "Daniel JB Clark",
+    "url": "https://github.com/djbclark"
+  },
+  "description": "Claude Code skills for orchestrating multi-agent work via Herdr and Ralph TUI + Beads",
+  "plugins": [
+    {
+      "name": "herdr-orchestration",
+      "source": "./plugins/herdr-orchestration",
+      "description": "Drive a multi-agent handoff chain directly via Herdr instead of human-relayed clipboard handoffs."
+    },
+    {
+      "name": "ralph-tui-orchestration",
+      "source": "./plugins/ralph-tui-orchestration",
+      "description": "Operate a Ralph TUI + Beads multi-repo controller system with real task-scoping safety discipline."
+    }
+  ]
+}

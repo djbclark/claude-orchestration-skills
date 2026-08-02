@@ -1,0 +1,13 @@
+{
+  "name": "ralph-tui-orchestration",
+  "description": "Operate a Ralph TUI + Beads multi-repo controller system — task-scoping safety discipline, verification patterns, and lessons from a real near-miss.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Daniel JB Clark",
+    "url": "https://github.com/djbclark"
+  },
+  "homepage": "https://github.com/djbclark/claude-orchestration-skills",
+  "repository": "https://github.com/djbclark/claude-orchestration-skills",
+  "license": "MIT",
+  "keywords": ["ralph-tui", "beads", "orchestration", "multi-agent", "automation"]
+}
