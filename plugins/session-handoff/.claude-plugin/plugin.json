@@ -1,0 +1,13 @@
+{
+  "name": "session-handoff",
+  "description": "Durable session continuity for Claude Code: a cheap Tier 1 pointer file per task workspace, a deeper Tier 2 recovery document for substantial work, and a PreCompact hook that writes a crash-safe checkpoint before any compaction.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Daniel JB Clark",
+    "url": "https://github.com/djbclark"
+  },
+  "homepage": "https://github.com/djbclark/claude-orchestration-skills",
+  "repository": "https://github.com/djbclark/claude-orchestration-skills",
+  "license": "MIT",
+  "keywords": ["session-handoff", "compaction", "context", "continuity", "orchestration"]
+}

@@ -15,6 +15,11 @@
       "name": "ralph-tui-orchestration",
       "source": "./plugins/ralph-tui-orchestration",
       "description": "Operate a Ralph TUI + Beads multi-repo controller system with real task-scoping safety discipline."
+    },
+    {
+      "name": "session-handoff",
+      "source": "./plugins/session-handoff",
+      "description": "Durable session continuity across compaction and cold starts: Tier 1 pointer file, Tier 2 recovery doc, and a PreCompact safety-net hook."
     }
   ]
 }
