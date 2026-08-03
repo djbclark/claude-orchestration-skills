@@ -63,6 +63,29 @@ for anything that isn't obviously one or the other — a fresh session has
 no assumed familiarity with what's a tool call, what's a real file, and
 what's ephemeral session state, and will guess if you don't say.
 
+### Durable file backing (Tier 1/Tier 2 handoff systems)
+
+Live orchestration works best on top of a durable, file-based
+session-handoff system: a cheap, out-of-tree "Tier 1" pointer file per
+task workspace (current state, next steps, a git-SHA anchor for
+staleness detection), and optionally a deeper "Tier 2" recovery document
+for substantial work. If your setup has one:
+
+- BEFORE spawning or prompting the next session, the owning session
+  updates Tier 1 — and writes a Tier 2 doc if the work is substantial
+  enough to deserve deep recovery.
+- The spawn prompt is a **bootstrap packet**, not a context dump:
+  1. repo + absolute workspace path
+  2. one-line objective
+  3. absolute path to the Tier 1 pointer file
+  4. instruction: "Report whether that file exists and whether its
+     recorded git SHA matches the actual current HEAD before doing
+     anything else."
+  5. a 2–3 line critical-fallback summary in case the path is wrong.
+- Sub-agents never write Tier 1/Tier 2; they end by returning a
+  completion report (what changed, commands run, blockers) and the
+  owner folds it into Tier 1.
+
 ## Orchestrator tab identity and self-closure defense
 
 **The orchestrator's own herdr tab must be named `orc`.** At the start of any
