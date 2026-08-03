@@ -5,13 +5,15 @@ Hook mode (default): read Claude Code hook JSON on stdin, write a Tier 1
 sidecar checkpoint (precompact-<utc-ts>.md). MUST always exit 0 — never
 fail or delay a compaction, no matter what.
 
-Resolve mode: `--resolve <dir>` prints "<repo>/<task>" or "REJECT".
+Resolve mode: `--resolve <dir>` prints "<repo>/<task>".
 
 Spec: site-private docs/session-handoff-compaction-spec.md §6.
 Python 3 stdlib only. No third-party imports.
 """
+import hashlib
 import json
 import os
+import re
 import subprocess
 import sys
 import tempfile
@@ -21,8 +23,40 @@ from pathlib import Path
 STATE_ROOT = Path.home() / ".local" / "state" / "handoffs"
 
 
+def _safe_slug(value):
+    """Return a bounded filesystem-safe path component for *value*."""
+    try:
+        slug = re.sub(r"[^A-Za-z0-9._-]+", "-", str(value))
+        slug = re.sub(r"-+", "-", slug).strip("-") or "root"
+        if len(slug) > 120:
+            digest = hashlib.sha1(slug.encode("utf-8")).hexdigest()[:8]
+            slug = f"{slug[:80]}-{digest}"
+        return slug
+    except Exception:
+        return "root"
+
+
+def _git_root(directory):
+    """Best-effort upward search for normal, worktree, or bare git roots."""
+    current = directory
+    for _ in range(64):
+        try:
+            dot_git = current / ".git"
+            if dot_git.is_dir() or dot_git.is_file():
+                return current
+            if (current / "HEAD").is_file() and (current / "objects").is_dir():
+                return current
+            parent = current.parent
+            if parent == current:
+                break
+            current = parent
+        except Exception:
+            break
+    return None
+
+
 def resolve_workspace(directory):
-    """Return (repo, task) or None outside recognized ops paths."""
+    """Return a safe ``(repo, task)`` tuple for every directory."""
     try:
         d = Path(directory).expanduser().resolve()
         home = Path.home()
@@ -30,16 +64,22 @@ def resolve_workspace(directory):
             parts = d.relative_to(home / "src" / "ops-worktrees").parts
             if len(parts) >= 2 and parts[0] != ".store":
                 return parts[1], parts[0]  # repo, task
-            return None
         except ValueError:
             pass
         try:
             parts = d.relative_to(home / "ops").parts
-            return (parts[0], "ops") if parts else None
+            if parts:
+                return parts[0], "ops"
         except ValueError:
-            return None
+            pass
+
+        root = _git_root(d)
+        if root is not None:
+            task_path = "root" if d == root else str(d.relative_to(root))
+            return _safe_slug(root.name), _safe_slug(task_path)
+        return "no-git", _safe_slug(str(d))
     except Exception:
-        return None
+        return "no-git", "root"
 
 
 def run_git(args, cwd):
@@ -62,8 +102,6 @@ def hook_main():
         data = {}
 
     resolved = resolve_workspace(os.getcwd())
-    if resolved is None:
-        return  # path guard: silent no-op outside ops trees
     repo, task = resolved
 
     cwd = os.getcwd()
@@ -138,8 +176,8 @@ def hook_main():
 
 def main():
     if len(sys.argv) >= 3 and sys.argv[1] == "--resolve":
-        r = resolve_workspace(sys.argv[2])
-        print(f"{r[0]}/{r[1]}" if r else "REJECT")
+        repo, task = resolve_workspace(sys.argv[2])
+        print(f"{repo}/{task}")
         return
     hook_main()
 

@@ -47,14 +47,19 @@ Herdr for work Ralph doesn't cover.
   (with best-effort transcript enrichment via a cheap model, gated by an
   environment-variable kill switch). Unlike the other two skills, this
   one isn't a wrapper around an external product — it ships the actual
-  hook script and CLI tooling (`plugins/session-handoff/hooks/`,
-  `plugins/session-handoff/tools/`). Installing the plugin gets you the
-  skill docs; you still need to copy or symlink `hooks/precompact_handoff.py`
-  into your Claude Code hooks directory and register it under
-  `PreCompact` in `settings.json` yourself, and set up `tools/` (a
-  Python 3.10+ venv per `tools/pyproject.toml`) if you want the
-  `session_log.py` helper or transcript enrichment. The path
-  conventions in the skill docs (`~/.local/state/handoffs/`,
+  hook script and CLI tooling under `plugins/session-handoff/hooks/`
+  (`precompact_handoff.py` plus a nested `handoff-tools/` package).
+  Installing the plugin gets you the skill docs; you still need to copy
+  or symlink `hooks/precompact_handoff.py` into your Claude Code hooks
+  directory and register it under `PreCompact` in `settings.json`
+  yourself, and set up `hooks/handoff-tools/` (a Python 3.10+ venv per
+  its `pyproject.toml`) if you want the `session_log.py` helper or
+  transcript enrichment. It also ships a `resume` skill (`/resume`) as
+  a thin start-of-session shortcut into `session-handoff`'s reader
+  protocol — `/handoff` (Tier 2) works out of the box once the
+  `handoff` skill is installed, since Claude Code skills are
+  slash-invocable by name. The path conventions in the skill docs
+  (`~/.local/state/handoffs/`,
   `~/src/ops-worktrees/<task>/<repo>`) are this reference
   implementation's own layout — adapt them to yours.
 

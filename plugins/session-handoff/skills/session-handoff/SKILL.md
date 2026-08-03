@@ -103,23 +103,33 @@ lists, memory) without the exact tool call that retrieves it.
 ## The PreCompact hook (optional, `hooks/precompact_handoff.py`)
 
 Register it in `PreCompact` (see your tool's hook-registration docs).
-It reads the hook's JSON stdin, resolves the current directory against
-the path convention above, and — if it resolves — writes a standalone
-`precompact-<utc-ts>.md` sidecar next to `SESSION_LOG.md` (branch,
-`head_sha`, dirty-file list, trigger) via an atomic temp-file+rename. It
-is a pure safety net: it never edits `SESSION_LOG.md` itself, and it
-**must always exit 0** — a hook that can fail or delay a compaction is
-worse than no hook. Outside the recognized path roots it's a silent
-no-op, so it's safe to register globally.
+It reads the hook's JSON stdin, resolves the current directory (the two
+path conventions above get a clean `(repo, task)` derivation; anything
+else falls back to a git-root-relative key, or a key derived from the
+literal directory path if there's no git repo at all — the resolver
+never bails out, it always produces something usable), and writes a
+standalone `precompact-<utc-ts>.md` sidecar next to `SESSION_LOG.md`
+(branch, `head_sha`, dirty-file list, trigger) via an atomic
+temp-file+rename. It is a pure safety net: it never edits
+`SESSION_LOG.md` itself, and it **must always exit 0** — a hook that
+can fail or delay a compaction is worse than no hook. It fires
+unconditionally in every session it's registered in — this reference
+implementation deliberately doesn't scope it to particular directories;
+if you want that instead, add a path check before the fallback
+resolution kicks in.
 
 Optional: after writing the sidecar, it fires one *detached* background
 process (never blocking the hook) that uses the Claude Agent SDK with a
 cheap/fast model to mine the session's transcript (path supplied in the
 hook's own JSON input) into a `*-enriched.md` companion — goal, failed
 approaches, decisions, measurements, next steps. This is the one piece
-that spends model quota; kill switch is the `HANDOFF_ENRICH=0`
-environment variable, checked before anything is spawned. The hook
-script itself stays dependency-free (stdlib only) on purpose — it must
-keep working even if the tools venv is broken; the SDK and other
-dependencies live only in `tools/`, which the hook merely shells out to
-if present.
+that spends model quota, and — like the sidecar write — it's not scoped
+to particular directories either, so its cost scales with every
+compaction in every session, not just a subset; the kill switch is the
+`HANDOFF_ENRICH=0` environment variable (checked before anything is
+spawned) if that cost isn't wanted at all, or add your own directory
+scoping around just the enrichment call if you want the cheap sidecar
+everywhere but the model spend scoped down. The hook script itself
+stays dependency-free (stdlib only) on purpose — it must keep working
+even if the tools venv is broken; the SDK and other dependencies live
+only in `tools/`, which the hook merely shells out to if present.
