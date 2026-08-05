@@ -157,6 +157,19 @@ something clearly secondary like `meta`. `herdr agent rename <target>
 
 ## Workflow per unit
 
+0. **Before starting any unit, make sure a durable plan/roster file
+   actually exists — don't assume it was created when the orchestrator
+   session started.** A real gap: an orchestrator picked up several real
+   units purely from conversational follow-up prompts after its initial
+   bootstrap had already settled into idle, and never wrote a plan file at
+   all until a supervising process noticed and asked for one explicitly.
+   If your setup has any kind of restart/watchdog supervision (see
+   "Proactive restart on context bloat" below), that supervision is only
+   as good as this file — a live orchestrator with no plan file is
+   unrecoverable state if it dies or gets restarted. If no plan file
+   exists yet when you're about to start a unit, create one now (even a
+   short one covering what's done so far and what's in flight) before
+   proceeding — don't wait to be asked.
 1. **Read the plan/roster row** for the next unit. Note what it suggests for
    vendor/model/effort — treat this as a hint, not a decision.
    - **"Update X" can mean more than one artifact — scope it fully before
