@@ -159,6 +159,19 @@ something clearly secondary like `meta`. `herdr agent rename <target>
 
 1. **Read the plan/roster row** for the next unit. Note what it suggests for
    vendor/model/effort — treat this as a hint, not a decision.
+   - **"Update X" can mean more than one artifact — scope it fully before
+     declaring done.** A real miss: an issue said "update the workstation,"
+     but the unit as executed only bumped a CI-tracking/detection-baseline
+     pin in a repo — a different thing from the actual running install the
+     issue meant (a separate local checkout + daemon, still stuck on the
+     old version after the PR merged). The PR-and-merge steps below (9-11)
+     all looked clean because the CI-pin half genuinely was done correctly;
+     nothing caught that it was only half the task until the operator asked
+     directly why the old version was still showing up. Before checking a
+     unit off, re-read the original issue/request's exact wording for words
+     like "workstation," "install," "running," "deployed," "the actual X" —
+     those point at a live artifact distinct from any repo/CI representation
+     of the same version number, and both may need updating separately.
 2. **Check real quota and real model availability before deciding.**
    - Whatever quota-tracking tool you have, check it before committing to a
      vendor for a unit of work — don't guess from memory. Swap accounts only
