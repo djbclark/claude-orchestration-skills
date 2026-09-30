@@ -14,6 +14,14 @@ over spawning and monitoring a sequence of agent units itself.
 underlying CLI primitives: panes, tabs, `agent start`/`prompt`/`wait`/
 `read`). This skill is the orchestration layer on top of that.
 
+## Reference files (read when needed)
+
+- [references/quota-pacing.md](references/quota-pacing.md) — read before routing work across multiple AI vendor accounts.
+- [references/pane-layout.md](references/pane-layout.md) — read before arranging, resizing, swapping or reading panes (Workflow per unit step 3).
+- [references/yolo-mode-by-tool.md](references/yolo-mode-by-tool.md) — read when starting a sub-agent (Workflow per unit step 4), and when one looks stalled rather than slow.
+- [references/herdr-cli-gotchas.md](references/herdr-cli-gotchas.md) — read when scripting herdr calls headlessly (new workspaces, `send-keys`, parsing output, `/exit` and resume).
+- [references/anti-patterns.md](references/anti-patterns.md) — read before writing a sub-agent prompt, trusting its report, merging its PR, or bulk-closing panes.
+
 ## Core rule: only the orchestrator orchestrates
 
 You (the main session) are the only thing that decides what happens next and
@@ -163,9 +171,8 @@ something clearly secondary like `meta`. `herdr agent rename <target>
    units purely from conversational follow-up prompts after its initial
    bootstrap had already settled into idle, and never wrote a plan file at
    all until a supervising process noticed and asked for one explicitly.
-   If your setup has any kind of restart/watchdog supervision (see
-   "Proactive restart on context bloat" below), that supervision is only
-   as good as this file — a live orchestrator with no plan file is
+   If your setup has any kind of restart/watchdog supervision, that
+   supervision is only as good as this file — a live orchestrator with no plan file is
    unrecoverable state if it dies or gets restarted. If no plan file
    exists yet when you're about to start a unit, create one now (even a
    short one covering what's done so far and what's in flight) before
@@ -200,9 +207,9 @@ something clearly secondary like `meta`. `herdr agent rename <target>
      just what the plan guessed — a multi-language, high-stakes, or
      "critical path" unit justifies the highest effort tier available; a
      contained single-file fix doesn't need it.
-3. **Arrange panes before launching** (see Layout below).
+3. **Arrange panes before launching** (see [references/pane-layout.md](references/pane-layout.md)).
 4. **Start the agent, then IMMEDIATELY set it to auto-approve/yolo mode**
-   before sending any task content (see the yolo-mode table below for
+   before sending any task content (see the yolo-mode table in [references/yolo-mode-by-tool.md](references/yolo-mode-by-tool.md) for
    per-tool flags — Herdr spawns the bare command name, so shell aliases
    only help in interactive shells, not here; pass the real flag directly).
    The only reason to let a sub-agent stop is if it decides on its own to
@@ -276,7 +283,7 @@ something clearly secondary like `meta`. `herdr agent rename <target>
     verification steps, not a stopping point — actually run `gh pr merge`
     yourself once satisfied. Do not let a unit's row get checked off `[x]` in
     the plan file while its PR just sits open "pending review" — that phrase
-    with no owner is how PRs go stale for good (see the anti-pattern below).
+    with no owner is how PRs go stale for good (see [references/anti-patterns.md](references/anti-patterns.md)).
     The only legitimate reasons to leave a PR unmerged after verification are
     ones you'd write down: a real design decision needs the operator's input,
     or the PR is intentionally a stacked/dependent follow-up waiting on
@@ -295,183 +302,4 @@ something clearly secondary like `meta`. `herdr agent rename <target>
     signal something got dropped, not a signal it's fine to ignore — go
     verify and merge it (or document why not) before moving on. This is the
     single check that catches the failure mode described in the anti-pattern
-    below before it compounds across many more agents.
-
-## Vendor quota gotchas worth knowing before routing work
-
-If you're pacing work across multiple AI vendor accounts (Claude, Codex,
-Gemini/Antigravity, OpenCode, Cursor, Copilot, Grok, etc.), a few things
-that don't hold up under scrutiny even though they sound plausible:
-
-- **Don't derive remaining quota from an assumed fixed ratio between a
-  short window (e.g. 5-hour) and a long one (e.g. weekly), or from
-  elapsed-time math.** This looks plausible for token-credit-metered
-  vendors, but real-world reports of a single heavy task draining a large
-  fraction of a week's quota in a few hours directly contradict any stable
-  ratio assumption for most of them — check the live account view instead
-  of extrapolating.
-- **Watch for soft ceilings.** Several vendors let a headline usage limit
-  silently fall through to real money once an "overage"/"use balance"
-  toggle is enabled, instead of actually stopping work at the limit. Never
-  select a usage-credits-backed or overage-enabled path without asking the
-  operator first, even if it's technically available.
-- **Never route work to a prepaid-balance account automatically.** If every
-  subscription-window account is exhausted or locked out, halt and ask —
-  don't fall through to spending real prepaid balance without explicit
-  authorization.
-- If your quota-tracking tool exposes a real pace/projection signal (e.g. a
-  computed "burn" vs. "conserve" classification derived from remaining%,
-  elapsed time, and learned burn rate), use that as the routing signal
-  instead of hand-deriving one from raw remaining-percent — a real pace
-  algorithm already accounts for things a quick mental estimate won't.
-
-## Pane layout convention
-
-- Never close a pane/tab. Minimize/shrink instead. The self-closure wrapper
-  mentioned above refuses self-closure as a backstop, but it is not a
-  reason to get sloppy about closing *other* panes/tabs either —
-  minimize/shrink remains the default.
-- 2 panes (you + newest agent): side by side.
-- 3 panes: you = top-left quarter, newest agent = full right half, older
-  agent = bottom-left quarter (under you).
-- 4 panes: you stay top-left quarter, newest/current agent goes under you
-  (bottom-left), the other 2 older agents share the right half.
-- 5+ panes: you stay in place, current agent under you, all older agents
-  stack in order on the right, shrinking as more accumulate.
-- **Within the right-side stack, size by activity, not just recency**:
-  agents that are `idle`/`done` get minimal space; agents still `working`
-  get more room. Re-check `herdr agent get` for each right-side pane whenever
-  you rearrange it and use `herdr pane resize` so active work is legible and
-  finished panes are just a status strip. This can mean an older agent
-  that's still working stays bigger than a more recently finished one —
-  activity state wins over recency for sizing.
-- **`pane resize --direction` semantics are inconsistent/counterintuitive
-  across a nested split tree** — the same direction argument shrank one
-  pane but no-op'd or grew a different one at another boundary, with no
-  obvious rule tied to upper/lower position in the split. Don't assume a
-  direction based on one earlier result. If a resize call returns
-  `"changed": false` or grows the wrong pane, try the same direction/amount
-  on the *other* pane sharing that boundary instead of guessing more
-  directions on the same pane — that flip is what worked in practice. Treat
-  this as "converge on a good-enough layout by trying a couple of calls and
-  checking the resulting rect", not something to get exactly right
-  analytically.
-- Use `herdr pane swap --source-pane <id> --target-pane <id>` to reposition
-  without closing/recreating panes when a new agent needs to become "the
-  newest" in the layout.
-- **Once a pane shrinks to a handful of rows (5+ agents), `agent read` may
-  only return 1-2 lines even at `--lines 150`** — the terminal's actual
-  rendered viewport is too small to hold much scrollback. Check
-  `herdr pane get <id>` — if `viewport_rows` is small (single digits), use
-  `herdr pane zoom <id> --on` to temporarily maximize it, read normally, then
-  `herdr pane zoom <id> --off` to restore the layout. Don't leave it zoomed.
-
-## Yolo-mode setup by tool (verify flags haven't moved before trusting this)
-
-| Kind | Flag/setting |
-| --- | --- |
-| `claude` | `~/.claude/settings.json`: `"permissions": {"defaultMode": "bypassPermissions"}` |
-| `codex` | `--dangerously-bypass-approvals-and-sandbox` |
-| `cursor-agent` | `--yolo` (alias for `--force`) |
-| `opencode` | `--auto` |
-| `copilot` | `--allow-all` |
-| `grok` | `--always-approve` |
-| Google's multi-model CLI ecosystem | `--dangerously-skip-permissions` — but verify which specific binary is actually authenticated and working before assuming; some standalone single-product CLIs in this space have been deprecated in favor of a broader multi-model successor, so the flag that works can depend on which binary you're actually driving |
-
-Shell aliases only expand in interactive shells — Herdr spawns the bare
-command name directly, so pass the real flag explicitly rather than relying
-on an alias defined in your shell rc file.
-
-When a new agent kind shows up that isn't in this table, check its
-`--help` output for `permission|skip|dangerous|yolo|auto|approv|sandbox`
-before assuming there's no equivalent — most CLI coding agents have one.
-
-**This is a deliberate scope trade-off, not a default to copy blindly.**
-Uniform full-bypass for every sub-agent is the opposite of the
-capability-narrowing pattern most multi-agent write-ups recommend (a
-child's permissions should be a *subset* of the parent's, narrower for
-riskier work) — it's justified here because every agent in this chain is
-trusted, on the operator's own machine, working against the operator's own
-accounts, and running unattended for exactly the reason full bypass
-removes: routine tool-permission friction. It stops being justified the
-moment a unit's task genuinely involves something higher-stakes than that
-— touching production credentials/secrets, an irreversible external action
-(force-push, a real financial transaction, deleting something with no
-backup), or a task from a source you haven't vetted. For those, don't
-blanket-yolo the pane: scope the prompt to the specific action needed and
-either leave that one tool gated (so it stops for a real approval) or do
-the sensitive step yourself instead of delegating it.
-
-**Detect a genuinely stalled sub-agent, not just a slow one.** A `timeout`
-from `agent prompt --wait` is expected on long tasks and is not itself a
-problem (see step 5 above). It becomes one when `herdr agent get <name>`'s
-`state_change_seq` hasn't moved across several consecutive checks spaced
-minutes apart while the pane is still nominally `working` — that's the
-"still thinking vs. actually stuck" distinction, and treating every
-timeout as "just wait more" forever means a truly wedged pane never gets
-noticed. If `state_change_seq` is flat for longer than the task's own
-prompt would plausibly take, treat it as stalled: read the pane directly
-(`herdr agent read <name> --source visible`) to see what it's actually
-doing before deciding whether to nudge it, restart it, or reassign the
-unit.
-
-## Herdr CLI gotchas when driving agents headlessly (verified 2026-09-26)
-
-- **`herdr workspace create` returns before the new pane's shell is up.**
-  A `herdr agent start … --pane <new-pane>` fired immediately fails with
-  `agent_pane_busy: agent target pane … is not an available shell`. Poll
-  `herdr pane read <pane>` until a shell prompt (`$`) appears — about 2 s —
-  then start the agent.
-- **Key names are `ctrl+c`, `enter`, `esc`** for `send-keys`; `ctrl-c` is
-  rejected with `invalid_key`.
-- **`herdr pane read` prints plain text.** Every other command prints one
-  JSON envelope, and a failure is `{"error":{"code","message"}}` **with
-  exit status 0** — parse the envelope, never trust the exit code.
-- `herdr agent prompt <target> "/exit"` cleanly ends a Claude session and
-  returns the pane to its shell (~1 s); `herdr agent start <name> --kind
-  claude --pane <id> -- --resume <session-id>` brings the same session
-  back — the two halves of a sleep/wake policy for idle panes.
-- Do not send a pane `/exit` while its composer holds unsent text — the
-  draft is lost with the process.
-
-## Anti-patterns (things that went wrong once, don't repeat)
-
-- Trusting a sub-agent's "CI passes" / "verified" claim without checking —
-  led to shipping-adjacent PRs with a real regression that a cosmetic-looking
-  fix had glossed over.
-- Writing "hand off to Agent N+1 the way this handoff to you was made" into a
-  sub-agent's prompt — ambiguous enough to read as "use herdr yourself,"
-  which is exactly what the core rule above forbids. Say plainly: prepare
-  your handoff (plan file + clipboard prompt per the existing protocol), the
-  orchestrator will launch the next one.
-- Re-enabling a disabled billing/credits toggle to get access to a better
-  model, on the theory that "the operator said make the best call" — that
-  authority covers model/vendor/effort selection, not spend-control settings.
-- Assuming a model name from an older plan/roster still exists — check the
-  live picker.
-- **Moving on while a sub-agent's PR sits unmerged "pending operator review."**
-  With merge authority, the merge step is yours: review and merge the unit's
-  PR before starting the next unit, or write down why not and when you'll
-  revisit it (see "Workflow per unit" steps 9-11). Otherwise PRs with no owner
-  pile up unnoticed, foundational fixes included.
-- **Trusting "local check passes" without confirming it actually ran
-  everything.** A sub-agent's worktree missing supporting tools/venvs makes
-  its own check script *silently skip* the exact checks that matter (lint,
-  format, test-collection) instead of failing — the sub-agent's "CI passes
-  locally" report is then genuinely true of what ran, and still worthless.
-  Before trusting a green local run, either reproduce it yourself with the
-  full toolchain installed, or at minimum grep its output for
-  "skip"/"not installed" next to anything load-bearing.
-- **Closing your own tab/pane during a bulk cleanup loop.** Check each target
-  against `$HERDR_TAB_ID`/`$HERDR_PANE_ID` before closing it. The self-closure
-  wrapper and the `orc` naming convention exist to stop this; don't remove
-  either without replacing that protection.
-- **Not reading a new script's own logic just because it has passing
-  tests.** A sub-agent's new notification script called a CLI subcommand
-  that doesn't exist (silently a no-op) instead of the one actually
-  confirmed working earlier in the same session, and separately had a
-  guaranteed false-positive bug — neither one was caught by its own tests,
-  because the tests were written by the same pass that missed the bugs.
-  Read new orchestrator-facing code (notifications, checks, anything meant
-  to fire unattended later) line by line once, independent of its test
-  suite.
+    in [references/anti-patterns.md](references/anti-patterns.md) before it compounds across many more agents.
