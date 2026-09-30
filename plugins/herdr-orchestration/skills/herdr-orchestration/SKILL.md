@@ -449,20 +449,11 @@ unit.
   authority covers model/vendor/effort selection, not spend-control settings.
 - Assuming a model name from an older plan/roster still exists — check the
   live picker.
-- **Letting a sub-agent's PR sit unmerged "pending operator review" while
-  moving on to the next unit** — a real, costly failure mode. Several agents
-  in a row each opened a real, CI-green PR and described it in their
-  handoff as awaiting review, which read fine in isolation but had no actual
-  owner for the merge step; the orchestrator kept launching new agents on
-  top without circling back. A dozen PRs across multiple repos sat open for
-  the rest of the session — including foundational fixes later work
-  depended on — and were only discovered via a deliberate full-plan re-read
-  near the end, not caught in the moment. The fix: a unit's PR gets merged
-  (or the exception is explicitly written down) before you move on, full
-  stop — see "Workflow per unit" steps 9-11 above. "Pending operator review"
-  is not a resting state for a sub-agent's own PR when you *are* the
-  orchestrator with merge authority; either you review-and-merge it now, or
-  you write down specifically why not and when it'll be revisited.
+- **Moving on while a sub-agent's PR sits unmerged "pending operator review."**
+  With merge authority, the merge step is yours: review and merge the unit's
+  PR before starting the next unit, or write down why not and when you'll
+  revisit it (see "Workflow per unit" steps 9-11). Otherwise PRs with no owner
+  pile up unnoticed, foundational fixes included.
 - **Trusting "local check passes" without confirming it actually ran
   everything.** A sub-agent's worktree missing supporting tools/venvs makes
   its own check script *silently skip* the exact checks that matter (lint,
@@ -471,16 +462,10 @@ unit.
   Before trusting a green local run, either reproduce it yourself with the
   full toolchain installed, or at minimum grep its output for
   "skip"/"not installed" next to anything load-bearing.
-- **Closing your own tab/pane during a bulk cleanup loop.** An orchestrator
-  instance once iterated over a list of tabs it believed were all "done"
-  sub-agents and closed them one by one — its own tab ID was in that list
-  (it hadn't checked its tab against `$HERDR_TAB_ID` before closing), so the
-  loop killed itself mid-batch. Recovered cleanly by resuming the session by
-  ID in a fresh pane (see "Orchestrator tab identity and self-closure
-  defense" above), but it should never have been possible in the first
-  place. Fixed with the self-closure wrapper plus the `orc` naming
-  convention — both now load-bearing, don't remove either without
-  replacing the protection they provide.
+- **Closing your own tab/pane during a bulk cleanup loop.** Check each target
+  against `$HERDR_TAB_ID`/`$HERDR_PANE_ID` before closing it. The self-closure
+  wrapper and the `orc` naming convention exist to stop this; don't remove
+  either without replacing that protection.
 - **Not reading a new script's own logic just because it has passing
   tests.** A sub-agent's new notification script called a CLI subcommand
   that doesn't exist (silently a no-op) instead of the one actually
