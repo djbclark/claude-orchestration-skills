@@ -31,8 +31,9 @@ small CLI), not just skill docs — see its section below for setup.
   via [Herdr](https://herdr.dev) (a terminal multiplexer for coding
   agents) instead of relaying prompts through a human pasting into fresh
   windows. Covers: the orchestrator-only-orchestrates rule, self-closure
-  defense, pane layout conventions, per-tool yolo-mode flags, and a list
-  of anti-patterns from real sessions.
+  defense, pane layout conventions, per-tool yolo-mode flags, when a
+  one-shot unit is better sent over the Agent Client Protocol (ACP) than
+  typed into a pane, and a list of anti-patterns from real sessions.
 - **`ralph-tui-orchestration`** — operating a
   [Ralph TUI](https://github.com/subsy/ralph-tui) + [Beads](https://github.com/gastownhall/beads)
   multi-repo controller system. Covers: task-scope-as-safety-control (the

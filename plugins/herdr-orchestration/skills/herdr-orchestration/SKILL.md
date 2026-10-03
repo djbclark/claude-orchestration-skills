@@ -34,6 +34,45 @@ start Agent N+1" into a sub-agent's prompt. When a sub-agent finishes, you
 read its output, verify it, decide the next unit and model yourself, and
 launch it yourself.
 
+## When a unit doesn't need a pane at all: ACP
+
+Many coding-agent CLIs now speak the
+[Agent Client Protocol](https://agentclientprotocol.com/) (ACP): JSON-RPC over
+stdio between a client and an agent, with sessions, streamed updates, typed
+tool calls, permission requests sent back to the client, and cancellation.
+Some have it built in (an `acp` subcommand or `--acp` flag); others, such as
+Claude Code and Codex, go through an adapter. Check each CLI's `--help` and the
+protocol's agent list.
+
+For a **one-shot, headless unit** (a review, a contained fix, a research
+question) sent to an ACP-capable agent, driving it from an ACP client is
+usually better than starting a Herdr pane and typing into it. A small client
+built on one of the official SDKs (Python, TypeScript, Rust, Kotlin, Java;
+see the protocol's Libraries pages) can:
+
+1. send the prompt and collect the final message, with no screen scraping and
+   no unsubmitted-prompt races;
+2. log every tool call and permission request, plus token usage where the
+   agent reports it;
+3. answer permission requests itself, for example allowing edits only inside
+   the unit's own files and refusing the rest. That is a per-call version of
+   the capability narrowing discussed in the yolo-mode reference, with no
+   bypass flag. It binds only agents that ask; some follow their own local
+   permission settings and auto-allow, so pick a stricter session mode where
+   the agent offers one;
+4. time out cleanly by sending `session/cancel` before killing the process.
+
+Two cautions from real runs. Always set the model explicitly: an adapter's
+default can be the user's most expensive model. And a normal end of turn is
+not success: one agent ended its turn cleanly with a provider error as its
+whole reply. Verify the outcome as you would for a pane.
+
+Herdr remains the right tool when the operator wants to watch or step in, when
+the unit is interactive or long-lived (several prompts, in-the-moment
+corrections, the session handoffs below), and for agents with no ACP mode.
+ACP is the channel between the orchestrator and one agent; it does not replace
+the orchestration rules in this skill.
+
 ## Session-to-session handoffs: prefer live orchestration over clipboard relay
 
 **If `HERDR_ENV=1` and the `herdr` binary responds, don't hand off via

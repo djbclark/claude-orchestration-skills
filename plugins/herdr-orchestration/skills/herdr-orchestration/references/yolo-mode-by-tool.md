@@ -34,6 +34,13 @@ blanket-yolo the pane: scope the prompt to the specific action needed and
 either leave that one tool gated (so it stops for a real approval) or do
 the sensitive step yourself instead of delegating it.
 
+**For a one-shot unit, ACP offers the narrower option without a bypass
+flag.** Over the Agent Client Protocol the agent sends permission requests to
+the client, so an ACP client can allow edits only under the unit's own paths,
+or refuse every edit for a read-only review. This only binds agents that ask;
+others apply their own local settings. The flags above are for interactive
+panes. See SKILL.md, "When a unit doesn't need a pane at all: ACP".
+
 **Detect a genuinely stalled sub-agent, not just a slow one.** A `timeout`
 from `agent prompt --wait` is expected on long tasks and is not itself a
 problem (see ["Workflow per unit"](../SKILL.md#workflow-per-unit) step 5). It becomes one when `herdr agent get <name>`'s
