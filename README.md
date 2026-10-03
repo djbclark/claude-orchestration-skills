@@ -1,7 +1,10 @@
 # claude-orchestration-skills
 
-Claude Code skills for orchestrating multi-agent work via [Herdr](https://herdr.dev)
-and [Ralph TUI](https://github.com/subsy/ralph-tui) + [Beads](https://github.com/gastownhall/beads).
+Claude Code skills for working sessions that have to be trusted afterwards:
+orchestrating multi-agent work via [Herdr](https://herdr.dev) and
+[Ralph TUI](https://github.com/subsy/ralph-tui) + [Beads](https://github.com/gastownhall/beads),
+keeping context across compaction, and auditing what a session actually left
+undone.
 
 These are the behavioral/discipline layer on top of those tools' own
 mechanics — what to actually *do* when spawning, monitoring, and verifying
@@ -15,6 +18,7 @@ status reports, silently-skipped steps) that motivated each rule.
 /plugin install herdr-orchestration@claude-orchestration-skills
 /plugin install ralph-tui-orchestration@claude-orchestration-skills
 /plugin install session-handoff@claude-orchestration-skills
+/plugin install loose@claude-orchestration-skills
 ```
 
 `session-handoff` additionally ships actual code (a hook script and a
@@ -75,3 +79,27 @@ actually happened and here's exactly how").
 ## License
 
 MIT — see [LICENSE](./LICENSE).
+
+## `loose`
+
+`/loose` audits the current session for what it actually left undone, then hands
+each live decision back as selectable multiple choice rather than a prose list.
+
+The two rules it enforces are the ones that are easy to skip:
+
+- **Verify, never recall.** Every item in the audit has a command behind it. An
+  audit written from memory reproduces your own blind spots — including claims you
+  stated as fact earlier in the session and never checked.
+- **Prompt, don't prose.** A list of findings makes the user compose a reply
+  enumerating what they want done. One question per decision, recommended option
+  first, lets them pick.
+
+The sweep covers repo state (separating your changes from other sessions'),
+leftover probe artifacts, background work that looks finished but delivered
+nothing, claims never verified, findings that exist only in the transcript,
+always-loaded docs the session has falsified, upstream bugs found but unreported,
+and deviations from decisions the user had already made.
+
+If you want session-close to also run tests and deploy, see
+[conclude-it](https://github.com/DevOtts/conclude-it), which is broader. `loose`
+stays out of deploy and keeps the decision-prompting half.

@@ -1,0 +1,13 @@
+{
+  "name": "loose",
+  "description": "Audit a working session for loose ends — unfinished work, unverified claims, leftover test artifacts, findings that exist only in chat, unreported upstream bugs — then hand every live decision back to the user as selectable multiple choice instead of a prose list.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Daniel JB Clark",
+    "url": "https://github.com/djbclark"
+  },
+  "homepage": "https://github.com/djbclark/claude-orchestration-skills",
+  "repository": "https://github.com/djbclark/claude-orchestration-skills",
+  "license": "MIT",
+  "keywords": ["session", "audit", "loose-ends", "verification", "handoff", "discipline"]
+}

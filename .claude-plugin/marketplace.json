@@ -20,6 +20,11 @@
       "name": "session-handoff",
       "source": "./plugins/session-handoff",
       "description": "Durable session continuity across compaction and cold starts: Tier 1 pointer file, Tier 2 recovery doc, and a PreCompact safety-net hook."
+    },
+    {
+      "name": "loose",
+      "source": "./plugins/loose",
+      "description": "Audit a session for loose ends by verification rather than recall, then hand every live decision back as selectable multiple choice."
     }
   ]
 }
