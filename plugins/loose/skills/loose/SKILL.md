@@ -4,9 +4,10 @@ description: >-
   Audit the current session for loose ends — unfinished work, unverified claims,
   leftover test artifacts, findings that exist only in chat, undisclosed
   deviations, unreported upstream bugs — then prompt the user to decide each one
-  as selectable multiple choice. Use when the user types /loose, asks "any loose
-  ends?", "anything outstanding?", "did we finish everything?", or asks to be
-  walked through what is left. Also use unprompted before a handoff or at the end
+  as selectable multiple choice, and finally ask whether to hand off or quit.
+  Use when the user types /loose, asks "any loose ends?", "anything
+  outstanding?", "did we finish everything?", or asks to be walked through what
+  is left. Also use unprompted before a handoff or at the end
   of a long working session.
 ---
 
@@ -86,10 +87,32 @@ compose a reply enumerating what they want, or can just pick.
 
 Categories 9 and 10 are **not** questions. Report them in a line each and move on.
 
+## Rule 4 — close by asking: hand off or quit
+
+Once the loose-end questions are answered (and any work they chose is done), end
+with one more `AskUserQuestion`, every time, even when the audit found nothing:
+
+1. **Hand off** — write a handoff document so a later session can resume.
+   Recommend it when anything is still open or deferred, or the session was long
+   or produced context that is not already written down somewhere durable.
+2. **Quit** — end the session. Recommend it when the audit closed everything and
+   all work is committed and pushed.
+3. **Keep working** — stay in the session; nothing else happens.
+
+Put the recommended one first with `(Recommended)` and give the reason in its
+description, e.g. "2 items deferred; a handoff keeps them findable".
+
+Then act on the answer. For a handoff, invoke whichever handoff skill is installed
+(for example `/handoff`); if there is none, write the handoff document yourself.
+You cannot run `/quit` yourself, since it is a built-in CLI command and not a
+skill, so tell the user to type it. If they chose the handoff, offer the quit
+prompt again once it is written.
+
 ## What this is not
 
 - **Not a handoff.** Use a session-handoff skill to persist context so work can
-  resume. This is about deciding what is still owed.
+  resume. This is about deciding what is still owed. Rule 4 only *offers* a
+  handoff at the end.
 - **Not task verification.** A verify-style skill proves one task meets its
   acceptance conditions. This sweeps a whole session, including the things nobody
   set acceptance conditions for.

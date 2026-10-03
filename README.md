@@ -100,6 +100,10 @@ nothing, claims never verified, findings that exist only in the transcript,
 always-loaded docs the session has falsified, upstream bugs found but unreported,
 and deviations from decisions the user had already made.
 
+It always closes with one last choice: hand off (write a handoff so a later
+session can resume), quit, or keep working. It recommends whichever fits what the
+audit found.
+
 If you want session-close to also run tests and deploy, see
 [conclude-it](https://github.com/DevOtts/conclude-it), which is broader. `loose`
 stays out of deploy and keeps the decision-prompting half.
