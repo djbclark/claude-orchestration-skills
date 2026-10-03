@@ -92,7 +92,9 @@ The two rules it enforces are the ones that are easy to skip:
   stated as fact earlier in the session and never checked.
 - **Prompt, don't prose.** A list of findings makes the user compose a reply
   enumerating what they want done. One question per decision, recommended option
-  first, lets them pick.
+  first, lets them pick. Questions come one at a time, and each chosen action is
+  done before the next question, because fixing one loose end often changes
+  another.
 
 The sweep covers repo state (separating your changes from other sessions'),
 leftover probe artifacts, background work that looks finished but delivered

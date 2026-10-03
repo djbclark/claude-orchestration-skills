@@ -3,12 +3,12 @@ name: loose
 description: >-
   Audit the current session for loose ends — unfinished work, unverified claims,
   leftover test artifacts, findings that exist only in chat, undisclosed
-  deviations, unreported upstream bugs — then prompt the user to decide each one
-  as selectable multiple choice, and finally ask whether to hand off or quit.
-  Use when the user types /loose, asks "any loose ends?", "anything
+  deviations, unreported upstream bugs — then put each one to the user as a
+  multiple-choice question, one at a time, and finally ask whether to hand off
+  or quit. Use when the user types /loose, asks "any loose ends?", "anything
   outstanding?", "did we finish everything?", or asks to be walked through what
-  is left. Also use unprompted before a handoff or at the end
-  of a long working session.
+  is left. Also use unprompted before a handoff or at the end of a long working
+  session.
 ---
 
 # loose — find what is unfinished, then make it decidable
@@ -73,13 +73,24 @@ Work the list. Each line is a command, not a memory.
 10. **Verified-closed items.** One line, so the same questions do not come back
     next session.
 
-## Rule 3 — then prompt, do not prose
+## Rule 3 — then step through them one at a time, do not prose
 
-Hand every live decision back with **`AskUserQuestion`**: one decision per
-question, the recommended option first and labelled `(Recommended)`, up to four
-per call, continuing in further calls until the tail is covered. Include a genuine
-"leave it as is" option wherever that is a real choice, and spell out the
-consequence in each option's description.
+Hand the live decisions back with **`AskUserQuestion`**, **one decision per
+call**, in order of consequence:
+
+1. Put the position in the `header` chip (`2/5`), and the finding plus enough
+   context to decide in the question.
+2. Put the recommended option first, labelled `(Recommended)`, with the reason in
+   its description. Include a genuine "leave it as is" option wherever that is a
+   real choice, and spell out the consequence in each option's description.
+3. Do each small chosen action before asking the next question. Queue anything
+   bigger and do it after the last item. If an answer settles or changes a later
+   item, drop or re-rank that item rather than asking it anyway.
+4. Finish with a table: item, choice, outcome (done / queued / skipped / left
+   open).
+
+One at a time rather than batched, because answers often depend on each other.
+Fixing one loose end can close another or change what you would recommend for it.
 
 Prose is for the context they need to choose *with* — the numbers, the risk, what
 you found. Not for the choosing itself. The difference is whether they have to
@@ -89,7 +100,7 @@ Categories 9 and 10 are **not** questions. Report them in a line each and move o
 
 ## Rule 4 — close by asking: hand off or quit
 
-Once the loose-end questions are answered (and any work they chose is done), end
+Once every loose end is decided (and any work they chose is done), end
 with one more `AskUserQuestion`, every time, even when the audit found nothing:
 
 1. **Hand off** — write a handoff document so a later session can resume.
