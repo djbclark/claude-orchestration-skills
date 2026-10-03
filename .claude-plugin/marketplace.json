@@ -25,6 +25,11 @@
       "name": "loose",
       "source": "./plugins/loose",
       "description": "Audit a session for loose ends by verification rather than recall, then hand every live decision back as selectable multiple choice."
+    },
+    {
+      "name": "steps",
+      "source": "./plugins/steps",
+      "description": "Step through open items one at a time as arrow-key multiple choice, recommended option first, acting on each answer before the next."
     }
   ]
 }

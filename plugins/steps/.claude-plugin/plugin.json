@@ -1,0 +1,13 @@
+{
+  "name": "steps",
+  "description": "Step the user through a list of open items one at a time, each as its own arrow-key multiple-choice prompt with the recommended option first, acting on each answer before asking the next.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Daniel JB Clark",
+    "url": "https://github.com/djbclark"
+  },
+  "homepage": "https://github.com/djbclark/claude-orchestration-skills",
+  "repository": "https://github.com/djbclark/claude-orchestration-skills",
+  "license": "MIT",
+  "keywords": ["decisions", "multiple-choice", "AskUserQuestion", "walkthrough", "discipline"]
+}

@@ -19,6 +19,7 @@ status reports, silently-skipped steps) that motivated each rule.
 /plugin install ralph-tui-orchestration@claude-orchestration-skills
 /plugin install session-handoff@claude-orchestration-skills
 /plugin install loose@claude-orchestration-skills
+/plugin install steps@claude-orchestration-skills
 ```
 
 `session-handoff` additionally ships actual code (a hook script and a
@@ -109,3 +110,14 @@ audit found.
 If you want session-close to also run tests and deploy, see
 [conclude-it](https://github.com/DevOtts/conclude-it), which is broader. `loose`
 stays out of deploy and keeps the decision-prompting half.
+
+## `steps`
+
+`/steps` walks the user through a list of open items one prompt at a time, with
+the recommended option first, and does what they picked before asking the next
+question. One at a time rather than batched, because answers often depend on
+each other. It takes item numbers or a topic (`/steps 2 4`, `/steps the backup
+stuff`), or else the open items in the latest list in the conversation. It ends
+with a table of what was decided and what happened.
+
+It pairs with `loose`: `loose` finds what is open, and `steps` decides it.
