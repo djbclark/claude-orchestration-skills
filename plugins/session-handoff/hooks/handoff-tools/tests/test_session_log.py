@@ -96,9 +96,14 @@ def test_max_3_bullets_rejected(state, repo):
 
 
 def test_sidecars_folded_and_deleted(state, repo):
+    # The sidecar's own stamp must stay inside the 30-day retention window
+    # (retain() ages entries out), or the folded entry is dropped before the
+    # assertion sees it. Build it from the clock: a hard-coded date here is a
+    # time bomb that goes red ~30 days after it is written.
+    stamp = datetime.now().astimezone().strftime("%Y-%m-%dT%H:%M:%S%z")
     (state / "precompact-20260803T120000Z.md").write_text(
         "---\ncompacted: true\ntrigger: manual\n"
-        "updated_at: 2026-08-03T08:00:00-0400\n---\n\nclean\n")
+        f"updated_at: {stamp}\n---\n\nclean\n")
     run(["write", "--dir", str(state), "--repo-dir", str(repo)],
         stdin=payload())
     text = (state / "SESSION_LOG.md").read_text()
