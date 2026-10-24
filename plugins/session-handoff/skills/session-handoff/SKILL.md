@@ -54,9 +54,10 @@ with the JSON payload on stdin (`session_id`, `writer`, `chain`,
 `latest_handoff`, `active_work`, `blockers`, `next_steps`,
 `history_bullets` — max 3). `read` and `fold` subcommands exist too;
 `read` returns the staleness verdict pre-computed. `session_log.py` and
-its test suite live in this plugin's `tools/` directory; set up a venv
-with `pyyaml`, `anyio`, and `claude-agent-sdk` (only needed if you also
-wire up the optional enrichment hook) per `tools/pyproject.toml`. Only
+its test suite live in this plugin's `hooks/handoff-tools/` directory; set
+up a venv with `pyyaml`, `anyio`, and `claude-agent-sdk` (only needed if you
+also wire up the optional enrichment hook) per
+`hooks/handoff-tools/pyproject.toml`. Only
 edit the file by hand if the helper is broken, and then follow the same
 rules it enforces (replace Current State wholesale; 10-entry/30-day/
 3-bullet caps; temp-file + rename).
@@ -132,4 +133,4 @@ scoping around just the enrichment call if you want the cheap sidecar
 everywhere but the model spend scoped down. The hook script itself
 stays dependency-free (stdlib only) on purpose — it must keep working
 even if the tools venv is broken; the SDK and other dependencies live
-only in `tools/`, which the hook merely shells out to if present.
+only in `hooks/handoff-tools/`, which the hook merely shells out to if present.
